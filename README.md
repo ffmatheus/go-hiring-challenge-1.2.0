@@ -31,4 +31,51 @@ This repository contains a Go application for managing products and their prices
   - `make run`: Will start the application.
   - `make docker-down`: Will stop the docker containers.
 
+## Mockery (Mock Generation)
+
+This project uses [mockery](https://github.com/vektra/mockery) to generate mock implementations for repository interfaces used in unit tests.
+
+### Installation
+
+```bash
+go install github.com/vektra/mockery/v2@latest
+```
+
+> **Note:** Make sure the mockery binary is compiled with the same (or newer) Go version that the project requires. If you see errors like `package requires newer Go version`, clone the [mockery repo](https://github.com/vektra/mockery) and build from source:
+>
+> ```bash
+> git clone --depth 1 https://github.com/vektra/mockery.git
+> cd mockery
+> go build -o $(go env GOPATH)/bin/mockery ./
+> ```
+
+### Usage
+
+The configuration lives in [`.mockery.yaml`](.mockery.yaml). To regenerate all mocks, run from the project root:
+
+```bash
+mockery
+```
+
+This will generate/update mock files under each interface's `mocks/` subdirectory:
+
+- `app/catalog/mocks/mock_product_repository.go`
+- `app/categories/mocks/mock_category_repository.go`
+
+### Adding a new mock
+
+1. Add the interface to `.mockery.yaml` under `packages`:
+   ```yaml
+   packages:
+     github.com/mytheresa/go-hiring-challenge/app/your_package:
+       interfaces:
+         YourInterface: {}
+   ```
+2. Run `mockery` to generate the mock.
+3. Use it in tests:
+   ```go
+   repo := mocks.NewMockYourInterface(t)
+   repo.EXPECT().YourMethod(args).Return(result, nil)
+   ```
+
 Follow up for the assignemnt here: [ASSIGNMENT.md](ASSIGNMENT.md)
