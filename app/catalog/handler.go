@@ -26,6 +26,20 @@ func NewCatalogHandler(r ProductRepository) *CatalogHandler {
 	}
 }
 
+// HandleGet lists products with optional filtering and pagination.
+//
+//	@Summary		List products
+//	@Description	Returns a paginated list of products, optionally filtered by category and max price.
+//	@Tags			catalog
+//	@Produce		json
+//	@Param			offset			query		int		false	"Pagination offset"		default(0)
+//	@Param			limit			query		int		false	"Pagination limit (1-100)"	default(10)
+//	@Param			category		query		string	false	"Filter by category code"
+//	@Param			price_less_than	query		number	false	"Filter by maximum price"
+//	@Success		200				{object}	catalogResponse
+//	@Failure		400				{object}	api.errorBody
+//	@Failure		500				{object}	api.errorBody
+//	@Router			/catalog [get]
 func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	offset, limit, err := parsePaginationParams(r)
 	if err != nil {
@@ -60,6 +74,17 @@ func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	api.OKResponse(w, toCatalogResponse(products, total, offset, limit))
 }
 
+// HandleGetByCode returns a single product with its variants.
+//
+//	@Summary		Get product by code
+//	@Description	Returns a single product with its variants. Variants with zero price inherit the product price.
+//	@Tags			catalog
+//	@Produce		json
+//	@Param			code	path		string	true	"Product code"
+//	@Success		200		{object}	productDetailResponse
+//	@Failure		404		{object}	api.errorBody
+//	@Failure		500		{object}	api.errorBody
+//	@Router			/catalog/{code} [get]
 func (h *CatalogHandler) HandleGetByCode(w http.ResponseWriter, r *http.Request) {
 	code := r.PathValue("code")
 

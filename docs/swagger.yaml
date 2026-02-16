@@ -1,0 +1,196 @@
+basePath: /
+definitions:
+  app_catalog.catalogResponse:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      products:
+        items:
+          $ref: '#/definitions/app_catalog.productResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  app_catalog.productDetailResponse:
+    properties:
+      category:
+        type: string
+      code:
+        type: string
+      price:
+        type: number
+      variants:
+        items:
+          $ref: '#/definitions/app_catalog.variantResponse'
+        type: array
+    type: object
+  app_catalog.productResponse:
+    properties:
+      category:
+        type: string
+      code:
+        type: string
+      price:
+        type: number
+    type: object
+  app_catalog.variantResponse:
+    properties:
+      name:
+        type: string
+      price:
+        type: number
+      sku:
+        type: string
+    type: object
+  app_categories.categoriesResponse:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/app_categories.categoryResponse'
+        type: array
+    type: object
+  app_categories.categoryResponse:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+    type: object
+  app_categories.createCategoryRequest:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+    type: object
+  github_com_mytheresa_go-hiring-challenge_app_api.errorBody:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+host: localhost:8484
+info:
+  contact: {}
+  description: REST API for product catalog management.
+  title: Mytheresa Catalog API
+  version: "1.0"
+paths:
+  /catalog:
+    get:
+      description: Returns a paginated list of products, optionally filtered by category
+        and max price.
+      parameters:
+      - default: 0
+        description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      - default: 10
+        description: Pagination limit (1-100)
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by category code
+        in: query
+        name: category
+        type: string
+      - description: Filter by maximum price
+        in: query
+        name: price_less_than
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app_catalog.catalogResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+      summary: List products
+      tags:
+      - catalog
+  /catalog/{code}:
+    get:
+      description: Returns a single product with its variants. Variants with zero
+        price inherit the product price.
+      parameters:
+      - description: Product code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app_catalog.productDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+      summary: Get product by code
+      tags:
+      - catalog
+  /categories:
+    get:
+      description: Returns all available product categories.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app_categories.categoriesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+      summary: List categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new product category. Both code and name are required.
+      parameters:
+      - description: Category to create
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/app_categories.createCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/app_categories.categoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_mytheresa_go-hiring-challenge_app_api.errorBody'
+      summary: Create category
+      tags:
+      - categories
+swagger: "2.0"

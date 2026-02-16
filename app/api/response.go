@@ -16,3 +16,8 @@ func ErrorResponse(w http.ResponseWriter, status int, message string) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
+
+// used by Swagger (swaggo)
+type errorBody struct {
+	Error string `json:"error" example:"error message"`
+}

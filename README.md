@@ -1,5 +1,7 @@
 # Go Hiring Challenge
 
+![Swagger UI](docs/swagger-ui.png)
+
 This repository contains a Go application for managing products and their prices, including functionalities for CRUD operations and seeding the database with initial data.
 
 ## Project Structure
@@ -30,6 +32,28 @@ This repository contains a Go application for managing products and their prices
   - `make test`: Will run the tests.
   - `make run`: Will start the application.
   - `make docker-down`: Will stop the docker containers.
+
+## Swagger (API Documentation)
+
+This project uses [Swaggo](https://github.com/swaggo/swag) to generate interactive API documentation from annotations in the Go source code.
+
+With the server running, access the Swagger UI at: **http://localhost:8484/swagger/index.html**
+
+### Installation
+
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+### Regenerating docs
+
+After modifying Swagger annotations in the handlers, regenerate the docs:
+
+```bash
+swag init -g cmd/server/main.go --parseDependency --parseInternal
+```
+
+This will update the files in the `docs/` directory (`docs.go`, `swagger.json`, `swagger.yaml`).
 
 ## Mockery (Mock Generation)
 
