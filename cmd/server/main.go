@@ -10,10 +10,21 @@ import (
 	"syscall"
 
 	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	"github.com/mytheresa/go-hiring-challenge/app/catalog"
+	"github.com/mytheresa/go-hiring-challenge/app/categories"
 	"github.com/mytheresa/go-hiring-challenge/app/database"
+	_ "github.com/mytheresa/go-hiring-challenge/docs"
 	"github.com/mytheresa/go-hiring-challenge/models"
 )
+
+//	@title			Mytheresa Catalog API
+//	@version		1.0
+//	@description	REST API for product catalog management.
+
+//	@host		localhost:8484
+//	@BasePath	/
 
 func main() {
 	// Load environment variables from .env file
@@ -36,11 +47,18 @@ func main() {
 
 	// Initialize handlers
 	prodRepo := models.NewProductsRepository(db)
-	cat := catalog.NewCatalogHandler(prodRepo)
+	catRepo := models.NewCategoriesRepository(db)
+
+	catalogHandler := catalog.NewCatalogHandler(prodRepo)
+	categoriesHandler := categories.NewCategoriesHandler(catRepo)
 
 	// Set up routing
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /catalog", cat.HandleGet)
+	mux.HandleFunc("GET /catalog", catalogHandler.HandleGet)
+	mux.HandleFunc("GET /catalog/{code}", catalogHandler.HandleGetByCode)
+	mux.HandleFunc("GET /categories", categoriesHandler.HandleGetCategories)
+	mux.HandleFunc("POST /categories", categoriesHandler.HandleCreateCategory)
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// Set up the HTTP server
 	srv := &http.Server{
