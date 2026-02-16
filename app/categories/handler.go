@@ -3,10 +3,13 @@ package categories
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 
 	"github.com/mytheresa/go-hiring-challenge/app/api"
 	"github.com/mytheresa/go-hiring-challenge/models"
 )
+
+var validCategoryCode = regexp.MustCompile(`^CTG\d{1,5}$`)
 
 type CategoryRepository interface {
 	GetAllCategories() ([]models.Category, error)
@@ -63,6 +66,11 @@ func (h *CategoriesHandler) HandleCreateCategory(w http.ResponseWriter, r *http.
 
 	if req.Code == "" {
 		api.ErrorResponse(w, http.StatusBadRequest, "code is required")
+		return
+	}
+
+	if !validCategoryCode.MatchString(req.Code) {
+		api.ErrorResponse(w, http.StatusBadRequest, "code must match format CTG followed by digits (max 8 characters, e.g. CTG001)")
 		return
 	}
 

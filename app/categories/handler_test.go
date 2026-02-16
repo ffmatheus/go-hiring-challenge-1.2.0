@@ -91,7 +91,7 @@ func TestHandleCreateCategory_Success(t *testing.T) {
 		Return(nil)
 
 	handler := NewCategoriesHandler(repo)
-	body := `{"code":"sandals","name":"Sandals"}`
+	body := `{"code":"CTG001","name":"Sandals"}`
 	req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
@@ -105,8 +105,8 @@ func TestHandleCreateCategory_Success(t *testing.T) {
 	var resp categoryResponse
 	json.NewDecoder(w.Body).Decode(&resp)
 
-	if resp.Code != "sandals" {
-		t.Errorf("expected code 'sandals', got %q", resp.Code)
+	if resp.Code != "CTG001" {
+		t.Errorf("expected code 'CTG001', got %q", resp.Code)
 	}
 	if resp.Name != "Sandals" {
 		t.Errorf("expected name 'Sandals', got %q", resp.Name)
@@ -146,7 +146,7 @@ func TestHandleCreateCategory_MissingName(t *testing.T) {
 	repo := mocks.NewMockCategoryRepository(t)
 
 	handler := NewCategoriesHandler(repo)
-	body := `{"code":"sandals"}`
+	body := `{"code":"CTG001"}`
 	req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(body))
 	w := httptest.NewRecorder()
 
@@ -157,12 +157,42 @@ func TestHandleCreateCategory_MissingName(t *testing.T) {
 	}
 }
 
+func TestHandleCreateCategory_InvalidCodeFormat(t *testing.T) {
+	tests := []struct {
+		name string
+		code string
+	}{
+		{"no prefix", "sandals"},
+		{"wrong prefix", "ABC001"},
+		{"letters after prefix", "CTGabc"},
+		{"too long", "CTG123456"},
+		{"prefix only", "CTG"},
+		{"lowercase prefix", "ctg001"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := mocks.NewMockCategoryRepository(t)
+			handler := NewCategoriesHandler(repo)
+			body := `{"code":"` + tt.code + `","name":"Test"}`
+			req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(body))
+			w := httptest.NewRecorder()
+
+			handler.HandleCreateCategory(w, req)
+
+			if w.Code != http.StatusBadRequest {
+				t.Fatalf("expected status 400 for code %q, got %d", tt.code, w.Code)
+			}
+		})
+	}
+}
+
 func TestHandleCreateCategory_RepoError(t *testing.T) {
 	repo := mocks.NewMockCategoryRepository(t)
 	repo.EXPECT().CreateCategory(mock.AnythingOfType("*models.Category")).Return(errors.New("duplicate"))
 
 	handler := NewCategoriesHandler(repo)
-	body := `{"code":"sandals","name":"Sandals"}`
+	body := `{"code":"CTG001","name":"Sandals"}`
 	req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(body))
 	w := httptest.NewRecorder()
 
